@@ -14,6 +14,7 @@ app.set("trust proxy", 1);
 const frontend = process.env.FE_URL;
 const isProduction = process.env.NODE_ENV === "production";
 const allowedOrigins = [
+  frontend,
   "https://acadbud.vercel.app",
   "http://localhost:3000",
   "https://acadmate.in",
