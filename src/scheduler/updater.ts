@@ -6,7 +6,7 @@ import { updateUnifiedtt } from "../utils/updateUnifiedtt";
 import { sendUpdate } from "../mail/notification";
 const update = async () => {
   try {
-    const thresholdTime = new Date(Date.now() - 2 * 60 * 1000);
+    const thresholdTime = new Date(Date.now() - 60 * 60 * 1000);
     const users = await User.find({
       lastUpdated: { $lt: thresholdTime },
     }).select("_id cookies lastUpdated batch");
@@ -42,4 +42,4 @@ const update = async () => {
 };
 
 // Schedule the cron job to run every minute.
-cron.schedule("*/1 * * * *", update);
+cron.schedule("0 * * * *", update);
