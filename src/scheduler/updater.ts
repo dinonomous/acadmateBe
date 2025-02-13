@@ -41,5 +41,7 @@ const update = async () => {
   }
 };
 
-// Schedule the cron job to run every minute.
-cron.schedule("0 * * * *", update);
+cron.schedule("0 * * * *", () => {
+  console.log(`Cron job triggered at ${new Date().toISOString()}`);
+  update();
+});
