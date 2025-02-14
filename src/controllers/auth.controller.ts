@@ -5,6 +5,7 @@ import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie";
 import { updateAttendance } from "../utils/updateAttendance";
 import { updateTimetable } from "../utils/updateTimetable";
 import { updateUnifiedtt } from "../utils/updateUnifiedtt";
+import { updateCalender } from "../utils/updateCalendar";
 
 interface AuthProps {
   username: string;
@@ -129,9 +130,11 @@ export const auth = async (req: Request, res: Response) => {
         console.log(
           "Success: User authenticated and updated/created in the database"
         );
+
         await Promise.all([
           updateAttendance(user._id, user.cookies),
           updateTimetable(user._id, user.cookies),
+          updateCalender(user._id, user.cookies),
         ]);
         await updateUnifiedtt(user._id, user.cookies, user.batch);
 

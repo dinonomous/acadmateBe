@@ -216,6 +216,7 @@ export async function updateTimetable(
           { $set: { timetable: {} } },
           { new: true }
         );
+        return -1;
       }
     } else {
       await User.findByIdAndUpdate(
@@ -223,8 +224,10 @@ export async function updateTimetable(
         { $set: { timetable: {} } },
         { new: true }
       );
+      return -1;
     }
   } catch (error) {
     console.error(error);
+    return -1;
   }
 }
