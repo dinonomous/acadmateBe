@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
     },
     batch: {
       type: String,
-      default: 1,
+      default: 0,
     },
     lastUpdated: {
       type: Date,

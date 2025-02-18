@@ -45,7 +45,6 @@ export const updateUnifiedtt = async (
 
     const batchNumber = parseInt(batch, 10);
     let unifiedTimeTableUrl: string;
-
     if (batchNumber === 1) {
       unifiedTimeTableUrl =
         "https://academia.srmist.edu.in/srm_university/academia-academic-services/page/Unified_Time_Table_2024_Batch_1";
@@ -80,13 +79,11 @@ export const updateUnifiedtt = async (
           const cells = $(element).find("td");
           if (cells.length > 0) {
             const day = $(cells[0]).text().trim();
-            // Process only rows where the first cell starts with "Day"
             if (day.startsWith("Day")) {
               const periods: { period: string; timeSlot: string }[] = [];
               cells.each((i, cell) => {
                 if (i > 0) {
                   const period = $(cell).text().trim();
-                  // Get the corresponding time slot from the first row's cell at the same index.
                   const timeSlot = $("tr:first-child > td").eq(i).text().trim();
                   periods.push({
                     period,

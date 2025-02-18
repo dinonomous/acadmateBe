@@ -136,7 +136,10 @@ export const auth = async (req: Request, res: Response) => {
           updateTimetable(user._id, user.cookies),
           updateCalender(user._id, user.cookies),
         ]);
-        await updateUnifiedtt(user._id, user.cookies, user.batch);
+        const Batch = await User.findById(user._id).select("batch");
+        if (Batch) {
+          await updateUnifiedtt(user._id, user.cookies, Batch.batch);
+        }
 
         await User.findByIdAndUpdate(
           user._id,
