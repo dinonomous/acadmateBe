@@ -17,18 +17,15 @@ const userSchema = new mongoose.Schema(
       default: {},
     },
     timetable: {
-      type: Object,
+      type: Array,
       required: false,
-      default: {},
+      default: [],
     },
     calendar: {
       type: Object,
       default: {},
     },
-    unifiedtt: {
-      type: Object,
-      default: {},
-    },
+
     do: {
       type: Number,
       default: 0,

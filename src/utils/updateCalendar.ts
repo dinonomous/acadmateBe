@@ -106,10 +106,10 @@ export const updateCalender = async (
         { new: true }
       );
     } else {
-      return -1;
+      return;
     }
   } catch (error) {
     console.error("Error fetching timetable data:", error);
-    return -1;
+    throw error;
   }
 };

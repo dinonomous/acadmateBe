@@ -36,11 +36,11 @@ export const updateUnifiedtt = async (
   userId: string | Types.ObjectId,
   cookies: string,
   batch: string
-): Promise<number | void> => {
+): Promise<TimeTableEntry[] | undefined> => {
   try {
     if (!batch) {
       console.error("Batch not provided");
-      return -1;
+      return;
     }
 
     const batchNumber = parseInt(batch, 10);
@@ -99,21 +99,13 @@ export const updateUnifiedtt = async (
           }
         });
 
-        await User.findByIdAndUpdate(
-          userId,
-          { $set: { unifiedtt: timeTableEntries } },
-          { new: true }
-        );
+        return timeTableEntries;
       } else {
-        await User.findByIdAndUpdate(
-          userId,
-          { $set: { unifiedtt: {} } },
-          { new: true }
-        );
+        return [];
       }
     }
   } catch (error) {
     console.error("Failed to fetch unified timetable:", error);
-    return -1;
+    throw error;
   }
 };

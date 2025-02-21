@@ -1,8 +1,8 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { User } from "../models/user.model";
 import { Cheerio } from "cheerio";
 import { Types } from "mongoose";
+import { User } from "../models/user.model";
 
 interface ResponseData {
   user: Array<{ [key: string]: string }>;
@@ -79,7 +79,6 @@ export async function updateTimetable(
         const $ = cheerio.load(result);
         let response: ResponseData = { user: [], timetable: [], advisors: [] };
 
-        // Extracting user data
         $("div.cntdDiv > div > table:nth-child(1) > tbody > tr").each(
           (i, row) => {
             const details = $(row)
@@ -97,10 +96,8 @@ export async function updateTimetable(
           }
         );
 
-        // Find all tables in the document
         const tables = $("table");
 
-        // Iterate over each table to find the one that matches the expected headers
         let timetableTable: Cheerio<cheerio.Element> | undefined;
         tables.each((index, table) => {
           const headers = $(table)
@@ -110,18 +107,16 @@ export async function updateTimetable(
             .map((i, el) => $(el).text().trim())
             .get();
 
-          // Check if the headers match the expected headers
           const isMatch = expectedHeaders.every((header) =>
             headers.includes(header)
           );
 
           if (isMatch) {
             timetableTable = $(table);
-            return false; // Break the loop once the correct table is found
+            return false;
           }
         });
 
-        // If the timetable table is found, extract the data
         const timetableData: Array<{
           SNo: string;
           CourseCode: string;
@@ -159,75 +154,29 @@ export async function updateTimetable(
               });
             }
           });
+          await User.findByIdAndUpdate(
+            userId,
+            {
+              $set: {
+                batch: response.user.find((u) => u.Batch)?.Batch,
+              },
+            },
+            { new: true }
+          );
 
           response.timetable = timetableData;
         } else {
           console.log("Timetable not found");
         }
-
-        // // Extracting advisors data
-        // $("table[width='800px'] > tr").each((i, row) => {
-        //   const role = $(row).find("strong").first().text().trim();
-        //   const name = $(row).find("strong").eq(1).text().trim();
-        //   const email = $(row).find('font[color="blue"]').text().trim();
-        //   const phone = $(row).find('font[color="green"]').text().trim();
-
-        //   if (role && name && email && phone) {
-        //     response.advisors.push({ role, name, email, phone });
-        //   }
-        // });
-
-        // Find the table containing the advisors' data
-        // const advisorTable = $("table[width='800px']");
-
-        // If the advisor table is found, extract the data
-        // if (advisorTable.length > 0) {
-        //   advisorTable.find("tr").each((index, row) => {
-        //     const cells = $(row).find("td");
-
-        //     cells.each((i, cell) => {
-        //       const role = $(cell).find("strong").first().text().trim();
-        //       const name = $(cell).find("strong").eq(1).text().trim();
-        //       const email = $(cell).find('font[color="blue"]').text().trim();
-        //       const phone = $(cell).find('font[color="green"]').text().trim();
-
-        //       if (role && name && (email || phone)) {
-        //         response.advisors.push({ role, name, email, phone });
-        //       }
-        //     });
-        //   });
-        // } else {
-        //   console.log("Advisor table not found");
-        // }
-
-        await User.findByIdAndUpdate(
-          userId,
-          {
-            $set: {
-              timetable: response,
-              batch: response.user.find((u) => u.Batch)?.Batch,
-            },
-          },
-          { new: true }
-        );
+        return response;
       } else {
-        await User.findByIdAndUpdate(
-          userId,
-          { $set: { timetable: {} } },
-          { new: true }
-        );
-        return -1;
+        return;
       }
     } else {
-      await User.findByIdAndUpdate(
-        userId,
-        { $set: { timetable: {} } },
-        { new: true }
-      );
-      return -1;
+      return;
     }
   } catch (error) {
     console.error(error);
-    return -1;
+    return;
   }
 }

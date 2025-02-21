@@ -5,20 +5,6 @@ interface CustomRequest extends Request {
   userId?: string;
 }
 
-const expectedHeaders = [
-  "Course Code",
-  "Course Title",
-  "Credit",
-  "Regn. Type",
-  "Category",
-  "Course Type",
-  "Faculty Name",
-  "Slot",
-  "GCR Code",
-  "Room No.",
-  "Academic Year",
-];
-
 export async function TimeTable(req: CustomRequest, res: Response) {
   try {
     const userId = req.userId;

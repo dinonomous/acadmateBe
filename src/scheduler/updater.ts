@@ -4,6 +4,7 @@ import { updateAttendance } from "../utils/updateAttendance";
 import { updateTimetable } from "../utils/updateTimetable";
 import { updateUnifiedtt } from "../utils/updateUnifiedtt";
 import { updateCalender } from "../utils/updateCalendar";
+import generateTimetable from "../utils/generateTimetable";
 // import { sendUpdate } from "../mail/notification";
 
 const update = async () => {
@@ -17,13 +18,20 @@ const update = async () => {
 
     for (const user of users) {
       try {
-        const updatePromises = [
-          updateAttendance(user._id, user.cookies),
-          updateTimetable(user._id, user.cookies),
-          updateUnifiedtt(user._id, user.cookies, user.batch),
-        ];
+        const timetableData = await updateTimetable(user._id, user.cookies);
+        const unifiedttData = await updateUnifiedtt(
+          user._id,
+          user.cookies,
+          user.batch
+        );
+        const updatePromises = [updateAttendance(user._id, user.cookies)];
         if (user.CalendarlastUpdated < calendarThresholdTime) {
           updatePromises.push(updateCalender(user._id, user.cookies));
+        }
+        if (timetableData && unifiedttData) {
+          await generateTimetable(user._id, timetableData, unifiedttData || []);
+        } else {
+          console.error(`Timetable data is undefined for user ${user._id}`);
         }
 
         await Promise.all(updatePromises);

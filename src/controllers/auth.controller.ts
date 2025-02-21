@@ -6,6 +6,7 @@ import { updateAttendance } from "../utils/updateAttendance";
 import { updateTimetable } from "../utils/updateTimetable";
 import { updateUnifiedtt } from "../utils/updateUnifiedtt";
 import { updateCalender } from "../utils/updateCalendar";
+import generateTimetable from "../utils/generateTimetable";
 
 interface AuthProps {
   username: string;
@@ -133,12 +134,21 @@ export const auth = async (req: Request, res: Response) => {
 
         await Promise.all([
           updateAttendance(user._id, user.cookies),
-          updateTimetable(user._id, user.cookies),
           updateCalender(user._id, user.cookies),
         ]);
+
         const Batch = await User.findById(user._id).select("batch");
         if (Batch) {
           await updateUnifiedtt(user._id, user.cookies, Batch.batch);
+        }
+        const timetableData = await updateTimetable(user._id, user.cookies);
+        const unifiedttData = Batch
+          ? await updateUnifiedtt(user._id, user.cookies, Batch.batch)
+          : null;
+        if (timetableData && unifiedttData) {
+          await generateTimetable(user._id, timetableData, unifiedttData || []);
+        } else {
+          console.error(`Timetable data is undefined for user ${user._id}`);
         }
 
         await User.findByIdAndUpdate(
