@@ -10,42 +10,54 @@ export const verifyToken = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
-  const token = req.cookies.token;
+): Promise<Response | void> => {
   try {
+    const token = req.cookies.token;
     if (!token) {
-      res
-        .clearCookie("token")
-        .status(401)
-        .json({ success: false, message: "Unauthorized" });
+      res.clearCookie("token");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
+
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not defined");
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
-    if (!decoded) {
-      res;
-      res
-        .clearCookie("token")
-        .status(401)
-        .json({ success: false, message: "Unauthorized - invalid token" });
-    }
-    req.userId = decoded.userId as string;
-    const userId = req.userId;
 
-    const user = await User.findOne({ _id: userId });
-    if (!user) {
-      res
-        .clearCookie("token")
-        .status(404)
-        .json({ success: false, message: "User not found" });
-      return;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
+    if (!decoded || !decoded.userId) {
+      res.clearCookie("token");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - invalid token",
+      });
     }
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      res.clearCookie("token");
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    req.userId = decoded.userId;
     next();
   } catch (error) {
-    res
-      .clearCookie("token")
-      .status(500)
-      .json({ success: false, message: "Unauthorized - invalid token" });
+    if (res.headersSent) return;
+
+    res.clearCookie("token");
+    const statusCode = error instanceof jwt.JsonWebTokenError ? 401 : 500;
+    const message =
+      statusCode === 401
+        ? "Unauthorized - invalid token"
+        : "Internal server error";
+
+    res.status(statusCode).json({
+      success: false,
+      message,
+    });
   }
 };
