@@ -172,15 +172,27 @@ export const auth = async (req: Request, res: Response) => {
 
 export const checkAuth = async (req: extendedRequest, res: Response) => {
   try {
-    const user = await User.findOne({ userId: req.userId }).select("-password");
-    if (!user) {
-      res.status(400).json({ success: false, message: "user not found" });
+    const userId = req.userId;
+    console.log(userId);
+    if (!userId) {
+      res.clearCookie("token");
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    res.status(200).json({ success: true, user });
+
+    const user = await User.findOne({ _id: userId });
+    console.log(user);
+    if (!user) {
+      res.clearCookie("token");
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.log("Error in checkAuth ", error);
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
-    res.status(400).json({ success: false, message: errorMessage });
+    return res.status(500).json({ success: false, message: errorMessage });
   }
 };

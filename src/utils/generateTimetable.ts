@@ -2,6 +2,7 @@ import { User } from "../models/user.model";
 import { Types } from "mongoose";
 
 interface Course {
+  Slot: string;
   CourseCode: string;
   CourseTitle: string;
   FacultyName: string;
@@ -61,6 +62,7 @@ export default async function generateAndStoreTimetable(
 
     for (const entry of userData.timetable.slice(1)) {
       const course: Course = {
+        Slot: entry.Slot,
         CourseCode: entry.CourseCode,
         CourseTitle: entry.CourseTitle,
         FacultyName: entry.FacultyName,
