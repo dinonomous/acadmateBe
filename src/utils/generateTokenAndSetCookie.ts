@@ -14,9 +14,9 @@ export const generateTokenAndSetCookie = (res: Response, userId: string) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "lax" : "strict",
-    domain: isProduction ? ".acadmate.in" : undefined,
+    secure: true,
+    sameSite: "none",
+    domain: ".acadmate.in",
     path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
