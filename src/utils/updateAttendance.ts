@@ -2,6 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { User } from "../models/user.model";
 import { Types } from "mongoose";
+import { findDiff } from "./logCatcher";
 
 interface ResponseData {
   user: Array<{ [key: string]: string }>;
@@ -32,7 +33,8 @@ function extractTextBetweenWords(
 
 export const updateAttendance = async (
   userId: string | Types.ObjectId,
-  cookies: string
+  cookies: string,
+  att: { attendance: []; marks: [] }
 ): Promise<void> => {
   try {
     if (!userId) {
@@ -73,7 +75,7 @@ export const updateAttendance = async (
               .find("td")
               .map((_, td) => $(td).text().trim())
               .get();
-            if (details.length > 1) {
+            if (details?.length > 1) {
               const [detail, value] = details;
               responseData.user.push({ [detail]: value });
             }
@@ -97,7 +99,7 @@ export const updateAttendance = async (
               .find("td")
               .map((_, td) => $(td).text().trim())
               .get();
-            if (details.length > 1) {
+            if (details?.length > 1) {
               const courseData: { [key: string]: string } = {};
               attendanceHeadings.forEach((heading, index) => {
                 courseData[heading] = details[index];
@@ -118,7 +120,7 @@ export const updateAttendance = async (
               .find("td")
               .map((_, td) => $(td).text().trim())
               .get();
-            if (details.length > 1) {
+            if (details?.length > 1) {
               const marksData: { [key: string]: any } = {};
               marksHeadings.forEach((heading, index) => {
                 if (heading === "Test Performance") {
@@ -143,11 +145,22 @@ export const updateAttendance = async (
           }
           return tests;
         }
-        await User.findByIdAndUpdate(
-          userId,
-          { $set: { att: responseData } },
-          { new: true }
-        );
+
+        if (JSON.stringify(responseData) != JSON.stringify(att)) {
+          // console.log("Att change triggered");
+          await User.findByIdAndUpdate(
+            userId,
+            { $set: { att: responseData } },
+            { new: true }
+          );
+          if (
+            att?.attendance?.length != 0 ||
+            att?.marks?.length != 0 ||
+            (att.attendance && att.marks)
+          ) {
+            findDiff(userId, att, responseData);
+          }
+        }
       } else {
         await User.findByIdAndUpdate(
           userId,

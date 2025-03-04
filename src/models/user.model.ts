@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 0,
     },
+    logs: {
+      type: [],
+      default: [],
+    },
     lastUpdated: {
       type: Date,
       default: Date.now,

@@ -9,12 +9,12 @@ import generateTimetable from "../utils/generateTimetable";
 
 const update = async () => {
   try {
-    const thresholdTime = new Date(Date.now() - 60 * 60 * 1000);
+    const thresholdTime = new Date(Date.now() - 30 * 1000);
     const calendarThresholdTime = new Date(Date.now() - 6 * 60 * 60 * 1000);
 
     const users = await User.find({
       lastUpdated: { $lt: thresholdTime },
-    }).select("_id cookies lastUpdated batch calendarLastUpdated");
+    }).select("_id cookies lastUpdated batch calendarLastUpdated att");
 
     for (const user of users) {
       try {
@@ -24,7 +24,9 @@ const update = async () => {
           user.cookies,
           user.batch
         );
-        const updatePromises = [updateAttendance(user._id, user.cookies)];
+        const updatePromises = [
+          updateAttendance(user._id, user.cookies, user.att || {}),
+        ];
         if (user.CalendarlastUpdated < calendarThresholdTime) {
           updatePromises.push(updateCalender(user._id, user.cookies));
         }
@@ -60,7 +62,7 @@ const update = async () => {
   }
 };
 
-cron.schedule("0 * * * *", () => {
+cron.schedule("* * * * *", () => {
   console.log(`Cron job triggered at ${new Date().toISOString()}`);
   update();
 });

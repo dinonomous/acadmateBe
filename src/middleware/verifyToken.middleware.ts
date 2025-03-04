@@ -1,6 +1,10 @@
-import jwt from "jsonwebtoken";
+import jwt, { TokenExpiredError, JsonWebTokenError } from "jsonwebtoken";
 import { Response, Request, NextFunction } from "express";
 import { User } from "../models/user.model";
+
+interface DecodedToken {
+  userId: string;
+}
 
 interface CustomRequest extends Request {
   userId?: string;
@@ -14,10 +18,9 @@ export const verifyToken = async (
   try {
     const token = req.cookies.token;
     if (!token) {
-      res.clearCookie("token");
       return res.status(401).json({
         success: false,
-        message: "Unauthorized",
+        message: "Unauthorized - No token provided",
       });
     }
 
@@ -25,12 +28,12 @@ export const verifyToken = async (
       throw new Error("JWT_SECRET is not defined");
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
-    if (!decoded || !decoded.userId) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as DecodedToken;
+    if (!decoded?.userId) {
       res.clearCookie("token");
       return res.status(401).json({
         success: false,
-        message: "Unauthorized - invalid token",
+        message: "Unauthorized - Invalid token",
       });
     }
 
@@ -49,15 +52,25 @@ export const verifyToken = async (
     if (res.headersSent) return;
 
     res.clearCookie("token");
-    const statusCode = error instanceof jwt.JsonWebTokenError ? 401 : 500;
-    const message =
-      statusCode === 401
-        ? "Unauthorized - invalid token"
-        : "Internal server error";
 
-    res.status(statusCode).json({
-      success: false,
-      message,
-    });
+    let message = "Internal server error";
+    let statusCode = 500;
+
+    if (error instanceof TokenExpiredError) {
+      message = "Token expired";
+      statusCode = 401;
+    } else if (error instanceof JsonWebTokenError) {
+      message = "Invalid token";
+      statusCode = 401;
+    }
+
+    if (req.accepts("html")) {
+      res.redirect("/login");
+    } else {
+      res.status(statusCode).json({
+        success: false,
+        message,
+      });
+    }
   }
 };

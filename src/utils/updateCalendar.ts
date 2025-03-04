@@ -4,12 +4,6 @@ import * as cheerio from "cheerio";
 import { User } from "../models/user.model";
 import { Types } from "mongoose";
 
-interface ResponseData {
-  user: Array<{ [key: string]: string }>;
-  attendance: any[];
-  marks: any[];
-}
-
 export const updateCalender = async (
   userId: string | Types.ObjectId,
   cookies: string

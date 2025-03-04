@@ -133,7 +133,7 @@ export const auth = async (req: Request, res: Response) => {
         );
 
         await Promise.all([
-          updateAttendance(user._id, user.cookies),
+          updateAttendance(user._id, user.cookies, user.att),
           updateCalender(user._id, user.cookies),
         ]);
 
