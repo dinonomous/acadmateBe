@@ -1,27 +1,27 @@
 import { Request, Response } from "express";
-import { User } from "../models/user.model";
 
-interface CustomRequest extends Request {
-  userId?: string;
-}
-
-export async function SignOut(req: CustomRequest, res: Response) {
+export const SignOut = (req: Request, res: Response) => {
   try {
-    const userId = req.userId;
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ error: "Unauthorized: user id not provided" });
-    }
-    const deletedUser = await User.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.clearCookie("token");
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      domain: ".acadmate.in",
+      path: "/",
+    });
 
-    return res.status(200).json({ message: "signed out successfully" });
+    // res.clearCookie("refreshToken", { ... });
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: "Signed out successfully",
+    });
   } catch (error) {
-    console.error("Error signing out:", error);
-    return res.status(500).json({ error: "Error signing out" });
+    console.error("Sign out error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
-}
+};
