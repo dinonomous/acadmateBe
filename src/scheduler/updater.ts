@@ -9,7 +9,7 @@ import generateTimetable from "../utils/generateTimetable";
 
 const update = async () => {
   try {
-    const thresholdTime = new Date(Date.now() - 30 * 1000);
+    const thresholdTime = new Date(Date.now() - 60 * 60 * 1000);
     const calendarThresholdTime = new Date(Date.now() - 6 * 60 * 60 * 1000);
 
     const users = await User.find({

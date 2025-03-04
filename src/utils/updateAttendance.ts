@@ -2,7 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { User } from "../models/user.model";
 import { Types } from "mongoose";
-import { findDiff } from "./logCatcher";
+// import { findDiff } from "./logCatcher";
 
 interface ResponseData {
   user: Array<{ [key: string]: string }>;
@@ -153,13 +153,13 @@ export const updateAttendance = async (
             { $set: { att: responseData } },
             { new: true }
           );
-          if (
-            att?.attendance?.length != 0 ||
-            att?.marks?.length != 0 ||
-            (att.attendance && att.marks)
-          ) {
-            findDiff(userId, att, responseData);
-          }
+          // if (
+          //   att?.attendance?.length != 0 ||
+          //   att?.marks?.length != 0 ||
+          //   (att.attendance && att.marks)
+          // ) {
+          //   findDiff(userId, att, responseData);
+          // }
         }
       } else {
         await User.findByIdAndUpdate(
