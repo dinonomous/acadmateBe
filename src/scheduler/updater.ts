@@ -62,7 +62,7 @@ const update = async () => {
   }
 };
 
-cron.schedule("* * * * *", () => {
+cron.schedule("0 * * * *", () => {
   console.log(`Cron job triggered at ${new Date().toISOString()}`);
   update();
 });
